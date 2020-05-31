@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -9,8 +10,10 @@ import (
 	"strconv"
 )
 
+var file_url = flag.String("url", "", "ダウンロードするファイルのURL")
+
 func headResponse() int64 {
-	resp, err := http.Head("http://cdimage-u-toyama.ubuntulinux.jp/releases/18.04.3/ubuntu-ja-18.04.3-desktop-amd64.iso")
+	resp, err := http.Head(*file_url)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -29,7 +32,7 @@ func convertInt64ToString(i int64) string {
 }
 
 func getResponse(client *http.Client, start int64, end int64, respCh chan []byte) <-chan []byte {
-	req, err := http.NewRequest("GET", "http://cdimage-u-toyama.ubuntulinux.jp/releases/18.04.3/ubuntu-ja-18.04.3-desktop-amd64.iso", nil)
+	req, err := http.NewRequest("GET", *file_url, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -52,6 +55,7 @@ func getResponse(client *http.Client, start int64, end int64, respCh chan []byte
 }
 
 func main() {
+	flag.Parse()
 	// var contents []byte
 	// Content-Lengthの取得
 	contentLength := headResponse()
@@ -82,7 +86,7 @@ func main() {
 		}
 	}
 
-	file, err := os.OpenFile("ubuntu-ja-18.04.3-desktop-amd64_my.iso", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	file, err := os.OpenFile("downloadFile", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatal(err)
 	}
